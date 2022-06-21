@@ -11,23 +11,35 @@ Rcpp::Rostream<true>&  Rcpp::Rcout = Rcpp::Rcpp_cout_get();
 Rcpp::Rostream<false>& Rcpp::Rcerr = Rcpp::Rcpp_cerr_get();
 #endif
 
-// simulate_blackjack
-std::vector<int> simulate_blackjack(double n_decks, double n_players, double n_hands, std::vector<int> card_deck);
-RcppExport SEXP _gambleR_simulate_blackjack(SEXP n_decksSEXP, SEXP n_playersSEXP, SEXP n_handsSEXP, SEXP card_deckSEXP) {
+// score_blackjackC
+List score_blackjackC(IntegerVector x, IntegerVector y);
+RcppExport SEXP _gambleR_score_blackjackC(SEXP xSEXP, SEXP ySEXP) {
 BEGIN_RCPP
     Rcpp::RObject rcpp_result_gen;
     Rcpp::RNGScope rcpp_rngScope_gen;
-    Rcpp::traits::input_parameter< double >::type n_decks(n_decksSEXP);
+    Rcpp::traits::input_parameter< IntegerVector >::type x(xSEXP);
+    Rcpp::traits::input_parameter< IntegerVector >::type y(ySEXP);
+    rcpp_result_gen = Rcpp::wrap(score_blackjackC(x, y));
+    return rcpp_result_gen;
+END_RCPP
+}
+// simulate_blackjackC
+Rcpp::DataFrame simulate_blackjackC(double n_players, double n_hands, std::vector<int> card_deck);
+RcppExport SEXP _gambleR_simulate_blackjackC(SEXP n_playersSEXP, SEXP n_handsSEXP, SEXP card_deckSEXP) {
+BEGIN_RCPP
+    Rcpp::RObject rcpp_result_gen;
+    Rcpp::RNGScope rcpp_rngScope_gen;
     Rcpp::traits::input_parameter< double >::type n_players(n_playersSEXP);
     Rcpp::traits::input_parameter< double >::type n_hands(n_handsSEXP);
     Rcpp::traits::input_parameter< std::vector<int> >::type card_deck(card_deckSEXP);
-    rcpp_result_gen = Rcpp::wrap(simulate_blackjack(n_decks, n_players, n_hands, card_deck));
+    rcpp_result_gen = Rcpp::wrap(simulate_blackjackC(n_players, n_hands, card_deck));
     return rcpp_result_gen;
 END_RCPP
 }
 
 static const R_CallMethodDef CallEntries[] = {
-    {"_gambleR_simulate_blackjack", (DL_FUNC) &_gambleR_simulate_blackjack, 4},
+    {"_gambleR_score_blackjackC", (DL_FUNC) &_gambleR_score_blackjackC, 2},
+    {"_gambleR_simulate_blackjackC", (DL_FUNC) &_gambleR_simulate_blackjackC, 3},
     {NULL, NULL, 0}
 };
 

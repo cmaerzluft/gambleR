@@ -22,25 +22,72 @@ library(RcppArmadillo)
 devtools::document()
 devtools::load_all()
 
-sourceCpp("src/simulate_blackjack.cpp")
+# sourceCpp("src/simulate_blackjack.cpp")
 
 set.seed(12345)
 n_decks <- 1
 n_players <- 5
-n_hands <- 100000
-tmp <- simulate_blackjack(n_decks = n_decks, n_players = n_players, n_hands = n_hands)
-tmp
+n_hands <- 10000
+bj_sim_hands <- simulate_blackjack(n_decks = n_decks, n_players = n_players, n_hands = n_hands)
+bj_sim_hands %>% filter(hand_id == 1)
 
-# bj_sim_hands <- simulate_blackjack(n_decks = n_decks, n_players = n_players, n_hands = n_hands)
-# saveRDS(bj_sim_hands, file = "dev/blackjack_sims_100k.Rdata")
-bj_sim_hands <- readRDS("dev/blackjack_sims_100k.Rdata")
+# bench::mark(
+#   check = FALSE,
+#   rcode = {
+#     bj_sim_hands %>%
+#       group_by(hand_id, player_id) %>%
+#       summarise(
+#         scoreR = score_blackjackR(card_value)$player_score
+#       )
+#   },
+#   ccode = {
+#     bj_sim_hands %>%
+#       group_by(hand_id) %>%
+#       summarise(
+#         scoreC = score_blackjack(card_value, player_id)$player_score
+#       )
+#   }
+# )
+
+# profvis::profvis({bj_sim_hands %>%
+#     group_by(hand_id) %>%
+#     summarise(
+#       scoreC = score_blackjackC(card_value, player_id)$player_score
+#     )})
+
+bench::mark(
+  check = FALSE,
+  rcode = {
+    bj_sim_hands %>%
+      group_by(hand_id, player_id) %>%
+      summarise(
+        scoreR = score_blackjackR(card_value)$player_score
+      )
+  },
+  ccode1 = {
+    bj_sim_hands %>%
+      group_by(hand_id, player_id) %>%
+      summarise(
+        scoreC1 = score_blackjackC(card_value)$player_score
+      )
+  },
+  ccode2 = {
+    bj_sim_hands %>%
+      group_by(hand_id, player_id) %>%
+      summarise(
+        scoreC2 = score_blackjack(card_value)$player_score
+      )
+  }
+)
+
 
 results_individual <- bj_sim_hands %>%
   group_by(hand_id, player_id) %>%
   summarise(
     faceup_card = card_value[card_number == 2] %% 100,
     n_cards = n(),
-    score = score_blackjack(card_value)$player_score
+    scoreC = score_blackjack(card_value)$player_score,
+    scoreR = score_blackjackR(card_value)$player_score
   )
 results_overall <- results_individual %>%
   group_by(hand_id) %>%

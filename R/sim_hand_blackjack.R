@@ -5,7 +5,7 @@ sim_hand_blackjack <- function(game, cards, hand_id, player_ids, n_players_deale
   remaining_cards <- cards[-deal]
 
   # Score (to help determine hit strategy)
-  scores <- score_blackjack(game = game)
+  scores <- score_blackjackR(game = game)
   to_hit <- scores$player_score < 17 | (scores$player_score == 17 & scores$soft_value)
 
   # Stop game if deal has 21 at start
@@ -30,7 +30,7 @@ sim_hand_blackjack <- function(game, cards, hand_id, player_ids, n_players_deale
       remaining_cards <- remaining_cards[-deal_card_idx]
 
       # Score and decide whether to hit again
-      scores <- score_blackjack(game = game$card_value[game$player_id == player_up])
+      scores <- score_blackjackR(game = game$card_value[game$player_id == player_up])
       to_hit[names(to_hit) == player_up] <- scores$player_score < 17 | (scores$player_score == 17 & scores$soft_value)
     }
   }

@@ -4,7 +4,7 @@
 \alias{score_blackjack}
 \title{Score Blackjack}
 \usage{
-score_blackjack(game)
+score_blackjack(x, y = NULL)
 }
 \arguments{
 \item{game}{data.frame(1) or numeric(n). If a data.frame is provided, it must contain columns card_value and player_id.

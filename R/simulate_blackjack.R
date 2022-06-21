@@ -1,3 +1,11 @@
+#' @export
+simulate_blackjack <- function(n_players, n_hands, n_decks = 1) {
+  card_deck <- rep(gambleR::card_deck$card_id, n_decks)
+
+  return(simulate_blackjackC(n_players = n_players, n_hands = n_hands, card_deck = card_deck))
+}
+
+
 # CM NOTE: Idea, run game as a nested tibble:
 #   game = tibble(game_id = numeric, cards = vector, hands = tibble())
 #     hands = tibble(player_id, card_number, card_value)

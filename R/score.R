@@ -15,12 +15,23 @@
 #' soft_value = logical. The player has a soft ace (ace treated as 11).
 #'
 #' @export
-score_blackjack <- function(game) {
-  UseMethod("score_blackjack")
+score_blackjack <- function(x, y = NULL) {
+  if (!is.null(y)) {
+    z <- score_blackjackC(as.integer(x), as.integer(y))
+  } else {
+    z <- score_blackjackC(as.integer(x))
+  }
+
+  return(z)
 }
 
 #' @export
-score_blackjack.data.frame <- function(game) {
+score_blackjackR <- function(game) {
+  UseMethod("score_blackjackR")
+}
+
+#' @export
+score_blackjackR.data.frame <- function(game) {
   value <- game$card_value %% 100
   value[value %in% 11:13] <- 10
   value[value == 14] <- 1
@@ -33,7 +44,7 @@ score_blackjack.data.frame <- function(game) {
 }
 
 #' @export
-score_blackjack.numeric <- function(game) {
+score_blackjackR.numeric <- function(game) {
   value <- game %% 100
   value[value %in% 11:13] <- 10
   value[value == 14] <- 1
