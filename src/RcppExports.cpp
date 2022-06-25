@@ -11,6 +11,17 @@ Rcpp::Rostream<true>&  Rcpp::Rcout = Rcpp::Rcpp_cout_get();
 Rcpp::Rostream<false>& Rcpp::Rcerr = Rcpp::Rcpp_cerr_get();
 #endif
 
+// id_to_value_blackjack
+int id_to_value_blackjack(int x);
+RcppExport SEXP _gambleR_id_to_value_blackjack(SEXP xSEXP) {
+BEGIN_RCPP
+    Rcpp::RObject rcpp_result_gen;
+    Rcpp::RNGScope rcpp_rngScope_gen;
+    Rcpp::traits::input_parameter< int >::type x(xSEXP);
+    rcpp_result_gen = Rcpp::wrap(id_to_value_blackjack(x));
+    return rcpp_result_gen;
+END_RCPP
+}
 // score_blackjackC
 List score_blackjackC(IntegerVector x, IntegerVector y);
 RcppExport SEXP _gambleR_score_blackjackC(SEXP xSEXP, SEXP ySEXP) {
@@ -38,6 +49,7 @@ END_RCPP
 }
 
 static const R_CallMethodDef CallEntries[] = {
+    {"_gambleR_id_to_value_blackjack", (DL_FUNC) &_gambleR_id_to_value_blackjack, 1},
     {"_gambleR_score_blackjackC", (DL_FUNC) &_gambleR_score_blackjackC, 2},
     {"_gambleR_simulate_blackjackC", (DL_FUNC) &_gambleR_simulate_blackjackC, 3},
     {NULL, NULL, 0}

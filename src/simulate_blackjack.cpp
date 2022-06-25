@@ -4,7 +4,70 @@
 using namespace Rcpp;
 
 // [[Rcpp::export]]
+int id_to_value_blackjack(int x) {
+  x = x % 100;
+  if (x == 11 | x == 12 | x == 13) { x = 10; }
+  if (x == 14) { x = 1; }
+
+  return x;
+}
+
+// [[Rcpp::export]]
+List score_indvidual_blackjack(std::vector<int> x) {
+  // Initializations
+  int n_scores = x.size();
+  int player_score = 0;
+  bool has_ace = false;
+  bool soft_value = false;
+
+  // Add scores and track aces
+  for (int i1 = 0; i1 < n_scores; ++i1) {
+    if (x[i1] == 1) { has_ace = true; }
+    player_score += x[i1];
+  }
+
+  // Count soft-aces as 11 (1 + 10)
+  soft_value = has_ace & ((player_score + 10) <= 21);
+  if (soft_value) { player_score += 10; }
+
+  return List::create(
+    _["player_score"] = player_score,
+    _["soft_value"] = soft_value
+  )
+}
+
+List score_groups_blackjack(std::vector<int> x, std::vector<int> y) {
+  // Initializations
+  // CM NOTE: Need to verify if this is what we want
+  // Alt do we want output to be same length as x???
+  std::vector<int> group_ids = sort_unique(noNA(y));
+  int n_groups = group_ids.size();
+  std::vector<int> player_score;
+  std::vector<int> soft_value;
+
+  for (int i1 = 0; i1 < n_groups; ++i1) {
+    std::vector<int> group_i1_hand;
+    for (int i2 = 0; i2 < x.size(); ++i2) {
+      if (y[i2] == group_ids[i1]) {
+        group_i1_hand.push_back(x[i2]);
+      }
+    }
+    List group_i1_score = score_indvidual_blackjack(group_i1_hand);
+
+    player_score.push_back(group_i1_score["player_score"]);
+    soft_value.push_back(group_i1_score["soft_value"]);
+  }
+
+  return List::create(
+    _["player_score"] = player_score,
+    _["soft_value"] = soft_value
+  )
+}
+
+// [[Rcpp::export]]
 List score_blackjackC(IntegerVector x, IntegerVector y = IntegerVector::create(0)) {
+  // CM NOTE: For some reason calling this function directly in R as part of a group_by is very memory inefficient.
+  //  need to find out why
   // Initializations
   int n_scores = x.size();
   int n_groups = y.size();
@@ -13,34 +76,28 @@ List score_blackjackC(IntegerVector x, IntegerVector y = IntegerVector::create(0
     group_ids = sort_unique(noNA(y));
     n_groups = group_ids.size();
   }
-  IntegerVector value(n_scores);
+  // IntegerVector value(n_scores);
   LogicalVector has_ace(n_groups);
   LogicalVector soft_value(n_groups);
   IntegerVector player_score(n_groups);
 
+  // Add scores and track aces
   for (int i1 = 0; i1 < n_scores; i1++) {
-    value[i1] = x[i1] % 100;
-    if (value[i1] == 11 | value[i1] == 12 | value[i1] == 13) {
-      value[i1] = 10;
-    }
-    if (value[i1] == 14) {
-      value[i1] = 1;
-    }
-
     for (int i2 = 0; i2 < n_groups; i2++) {
-      if (value[i1] == 1) {
+      if (x[i1] == 1) {
         has_ace[i2] = true;
       }
       if (n_groups > 1) {
         if (y[i1] == group_ids[i2]) {
-          player_score[i2] += value[i1];
+          player_score[i2] += x[i1];
         }
       } else {
-        player_score[i2] += value[i1];
+        player_score[i2] += x[i1];
       }
     }
   }
 
+  // Count soft-aces as 11 (1 + 10)
   for (int i1 = 0; i1 < n_groups; i1++) {
     soft_value[i1] = has_ace[i1] & ((player_score[i1] + 10) <= 21);
     if (soft_value[i1]) {
@@ -66,11 +123,13 @@ Rcpp::DataFrame simulate_blackjackC(double n_players, double n_hands, std::vecto
   std::vector<int> game_hand_id;
   std::vector<int> game_player_id;
   std::vector<int> game_card_number;
+  std::vector<int> game_card_id;
   std::vector<int> game_card_value;
   std::vector<int> game_shuffle_id;
   game_hand_id.reserve(n_hands*n_players_dealer*2);
   game_player_id.reserve(n_hands*n_players_dealer*2);
   game_card_number.reserve(n_hands*n_players_dealer*2);
+  game_card_id.reserve(n_hands*n_players_dealer*2);
   game_card_value.reserve(n_hands*n_players_dealer*2);
   game_shuffle_id.reserve(n_hands*n_players_dealer*2);
 
@@ -86,9 +145,11 @@ Rcpp::DataFrame simulate_blackjackC(double n_players, double n_hands, std::vecto
     //  of a vector because hand_ objects are really just subsets of game_ objects which is what we return ultimately
     std::vector<int> hand_player_id;
     std::vector<int> hand_card_number;
+    std::vector<int> hand_card_id;
     std::vector<int> hand_card_value;
     hand_player_id.reserve(n_players_dealer*2);
     hand_card_number.reserve(n_players_dealer*2);
+    hand_card_id.reserve(n_players_dealer*2);
     hand_card_value.reserve(n_players_dealer*2);
 
     // Reshuffle the deck if we need to
@@ -107,15 +168,20 @@ Rcpp::DataFrame simulate_blackjackC(double n_players, double n_hands, std::vecto
     // Deal the cards
     for (int i2 = 0; i2 < 2; ++i2) {
       for (int i3 = 0; i3 < n_players_dealer; ++i3) {
+        int card_i_i3 = shuffled_deck[0];
+        int card_v_i3 = id_to_value_blackjack(card_i_i3);
+
         // Deal cards tracking in the game results
         game_shuffle_id.push_back(current_shuffle);
         game_hand_id.push_back(i1 + 1);
         game_player_id.push_back(player_ids[i3]);
         game_card_number.push_back(i2 + 1);
-        game_card_value.push_back(shuffled_deck[0]);
+        game_card_id.push_back(card_i_i3);
+        game_card_value.push_back(card_v_i3);
         // and in the current hand
         hand_player_id.push_back(player_ids[i3]);
-        hand_card_value.push_back(shuffled_deck[0]);
+        hand_card_id.push_back(card_i_i3);
+        hand_card_value.push_back(card_v_i3);
         // Remove dealt card from deck
         shuffled_deck.erase(shuffled_deck.begin());
       }
@@ -165,17 +231,21 @@ Rcpp::DataFrame simulate_blackjackC(double n_players, double n_hands, std::vecto
       }
       int player_card_number = player_cards.size() + 1;
 
+      int card_i_wh = shuffled_deck[0];
+      int card_v_wh = id_to_value_blackjack(card_i_wh);
       // Deal card to the player in the game
       game_shuffle_id.push_back(current_shuffle);
       game_hand_id.push_back(i1 + 1);
       game_player_id.push_back(player_up);
       game_card_number.push_back(player_card_number);
-      game_card_value.push_back(shuffled_deck[0]);
+      game_card_id.push_back(card_i_wh);
+      game_card_value.push_back(card_v_wh);
       // and in the current hand
       hand_player_id.push_back(player_up);
-      hand_card_value.push_back(shuffled_deck[0]);
+      hand_card_id.push_back(card_i_wh);
+      hand_card_value.push_back(card_v_wh);
       // and in current player
-      player_cards.push_back(shuffled_deck[0]);
+      player_cards.push_back(card_v_wh);
       // Remove dealt card from deck
       shuffled_deck.erase(shuffled_deck.begin());
 
@@ -197,6 +267,7 @@ Rcpp::DataFrame simulate_blackjackC(double n_players, double n_hands, std::vecto
     Rcpp::Named("hand_id") = game_hand_id,
     Rcpp::Named("player_id") = game_player_id,
     Rcpp::Named("card_number") = game_card_number,
+    Rcpp::Named("card_id") = game_card_id,
     Rcpp::Named("card_value") = game_card_value
   );
 }
