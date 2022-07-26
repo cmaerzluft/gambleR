@@ -28,99 +28,18 @@ set.seed(12345)
 n_decks <- 1
 n_players <- 5
 n_hands <- 10000
-bj_sim_hands <- simulate_blackjack(n_decks = n_decks, n_players = n_players, n_hands = n_hands)
-bj_sim_hands %>% filter(hand_id == 1)
-
-sourceCpp("dev/score_blackjack.cpp")
-score_blackjackC2(bj_sim_hands$card_value)
-bj_sim_hands %>%
-  group_by(hand_id) %>%
-  mutate(
-    n = n(),
-    s = score_blackjackC2(card_value)$player_score
-  ) %>%
-  filter(hand_id == max(bj_sim_hands$hand_id))
-
-bj_sim_hands <- tibble(bj_sim_hands)
-tracemem(bj_sim_hands$card_value)
-bj_sim_hands2 <- bind_rows(bj_sim_hands, bj_sim_hands, bj_sim_hands, bj_sim_hands)
-profvis::profvis(
-  bj_sim_hands %>% group_by(player_id) %>% mutate(score_blackjackC2(card_value))
+count_method <- "hi-lo"
+# count_method <- "griffin_ultimate"
+bj_sim_hands <- simulate_blackjack(
+  n_decks = n_decks, n_players = n_players, n_hands = n_hands, count_method = count_method
 )
-untracemem(bj_sim_hands)
-bench::mark(
-  check = F,
-  m1 = { score_blackjackC2(bj_sim_hands$card_value) },
-  m2 = { score_blackjackC2(bj_sim_hands$card_value, unique(bj_sim_hands$player_id)) },
-  m3 = { bj_sim_hands %>% mutate(score_blackjackC2(card_value)) }#,
-  # m4 = { bj_sim_hands %>% group_by(hand_id, player_id) %>% summarise(score_blackjackC2(card_value, unique(bj_sim_hands$player_id))) }
-)
-library(lobstr)
-obj_size(bj_sim_hands)
-
-bj_sim_hands %>%
-  group_by(shuffle_id, hand_id, player_id) %>%
-  mutate(
-    score = score_blackjack(card_value)
-  )
-
-# bench::mark(
-#   check = FALSE,
-#   rcode = {
-#     bj_sim_hands %>%
-#       group_by(hand_id, player_id) %>%
-#       summarise(
-#         scoreR = score_blackjackR(card_value)$player_score
-#       )
-#   },
-#   ccode = {
-#     bj_sim_hands %>%
-#       group_by(hand_id) %>%
-#       summarise(
-#         scoreC = score_blackjack(card_value, player_id)$player_score
-#       )
-#   }
-# )
-
-# profvis::profvis({bj_sim_hands %>%
-#     group_by(hand_id) %>%
-#     summarise(
-#       scoreC = score_blackjackC(card_value, player_id)$player_score
-#     )})
-
-bench::mark(
-  check = FALSE,
-  rcode = {
-    bj_sim_hands %>%
-      group_by(hand_id, player_id) %>%
-      summarise(
-        scoreR = score_blackjackR(card_value)$player_score
-      )
-  },
-  ccode1 = {
-    bj_sim_hands %>%
-      group_by(hand_id, player_id) %>%
-      summarise(
-        scoreC1 = score_blackjackC(card_value)$player_score
-      )
-  },
-  ccode2 = {
-    bj_sim_hands %>%
-      group_by(hand_id, player_id) %>%
-      summarise(
-        scoreC2 = score_blackjack(card_value)$player_score
-      )
-  }
-)
-
 
 results_individual <- bj_sim_hands %>%
   group_by(hand_id, player_id) %>%
   summarise(
     faceup_card = card_value[card_number == 2] %% 100,
     n_cards = n(),
-    scoreC = score_blackjack(card_value)$player_score,
-    scoreR = score_blackjackR(card_value)$player_score
+    score = max(running_score)
   )
 results_overall <- results_individual %>%
   group_by(hand_id) %>%

@@ -1,8 +1,24 @@
 #' @export
-simulate_blackjack <- function(n_players, n_hands, n_decks = 1) {
+simulate_blackjack <- function(n_players, n_hands, n_decks = 1, count_method = "hi-lo") {
+  if (n_players < 1) { stop("n_players must be a positive value") }
+  if (n_hands < 1) { stop("n_hands must be a positive value") }
+  if (n_decks < 1) { stop("n_decks must be a positive value") }
+  count_method <- match.arg(count_method, c("hi-lo", "omega2", "griffin_ultimate"))
   card_deck <- rep(gambleR::card_deck$card_id, n_decks)
 
-  return(simulate_blackjackC(n_players = n_players, n_hands = n_hands, card_deck = card_deck))
+  res <- tryCatch(
+    {
+      simulate_blackjackC(
+        n_players = n_players, n_hands = n_hands, card_deck = card_deck, count_method = count_method
+      ) %>% tibble()
+    },
+    error = function(cond) {
+      message(paste0(cond))
+      return(NA)
+    }
+  )
+
+  return(res)
 }
 
 

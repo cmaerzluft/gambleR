@@ -11,47 +11,49 @@ Rcpp::Rostream<true>&  Rcpp::Rcout = Rcpp::Rcpp_cout_get();
 Rcpp::Rostream<false>& Rcpp::Rcerr = Rcpp::Rcpp_cerr_get();
 #endif
 
-// id_to_value_blackjack
-int id_to_value_blackjack(int x);
-RcppExport SEXP _gambleR_id_to_value_blackjack(SEXP xSEXP) {
+// count_cards_by_group
+std::vector<int> count_cards_by_group(std::vector<int> x, std::vector<int> y, const std::string method);
+RcppExport SEXP _gambleR_count_cards_by_group(SEXP xSEXP, SEXP ySEXP, SEXP methodSEXP) {
 BEGIN_RCPP
     Rcpp::RObject rcpp_result_gen;
     Rcpp::RNGScope rcpp_rngScope_gen;
-    Rcpp::traits::input_parameter< int >::type x(xSEXP);
-    rcpp_result_gen = Rcpp::wrap(id_to_value_blackjack(x));
+    Rcpp::traits::input_parameter< std::vector<int> >::type x(xSEXP);
+    Rcpp::traits::input_parameter< std::vector<int> >::type y(ySEXP);
+    Rcpp::traits::input_parameter< const std::string >::type method(methodSEXP);
+    rcpp_result_gen = Rcpp::wrap(count_cards_by_group(x, y, method));
     return rcpp_result_gen;
 END_RCPP
 }
-// score_blackjackC
-List score_blackjackC(IntegerVector x, IntegerVector y);
-RcppExport SEXP _gambleR_score_blackjackC(SEXP xSEXP, SEXP ySEXP) {
+// ids_to_value_blackjack
+std::vector<int> ids_to_value_blackjack(std::vector<int> x);
+RcppExport SEXP _gambleR_ids_to_value_blackjack(SEXP xSEXP) {
 BEGIN_RCPP
     Rcpp::RObject rcpp_result_gen;
     Rcpp::RNGScope rcpp_rngScope_gen;
-    Rcpp::traits::input_parameter< IntegerVector >::type x(xSEXP);
-    Rcpp::traits::input_parameter< IntegerVector >::type y(ySEXP);
-    rcpp_result_gen = Rcpp::wrap(score_blackjackC(x, y));
+    Rcpp::traits::input_parameter< std::vector<int> >::type x(xSEXP);
+    rcpp_result_gen = Rcpp::wrap(ids_to_value_blackjack(x));
     return rcpp_result_gen;
 END_RCPP
 }
 // simulate_blackjackC
-Rcpp::DataFrame simulate_blackjackC(double n_players, double n_hands, std::vector<int> card_deck);
-RcppExport SEXP _gambleR_simulate_blackjackC(SEXP n_playersSEXP, SEXP n_handsSEXP, SEXP card_deckSEXP) {
+Rcpp::DataFrame simulate_blackjackC(double n_players, double n_hands, std::vector<int> card_deck, std::string count_method);
+RcppExport SEXP _gambleR_simulate_blackjackC(SEXP n_playersSEXP, SEXP n_handsSEXP, SEXP card_deckSEXP, SEXP count_methodSEXP) {
 BEGIN_RCPP
     Rcpp::RObject rcpp_result_gen;
     Rcpp::RNGScope rcpp_rngScope_gen;
     Rcpp::traits::input_parameter< double >::type n_players(n_playersSEXP);
     Rcpp::traits::input_parameter< double >::type n_hands(n_handsSEXP);
     Rcpp::traits::input_parameter< std::vector<int> >::type card_deck(card_deckSEXP);
-    rcpp_result_gen = Rcpp::wrap(simulate_blackjackC(n_players, n_hands, card_deck));
+    Rcpp::traits::input_parameter< std::string >::type count_method(count_methodSEXP);
+    rcpp_result_gen = Rcpp::wrap(simulate_blackjackC(n_players, n_hands, card_deck, count_method));
     return rcpp_result_gen;
 END_RCPP
 }
 
 static const R_CallMethodDef CallEntries[] = {
-    {"_gambleR_id_to_value_blackjack", (DL_FUNC) &_gambleR_id_to_value_blackjack, 1},
-    {"_gambleR_score_blackjackC", (DL_FUNC) &_gambleR_score_blackjackC, 2},
-    {"_gambleR_simulate_blackjackC", (DL_FUNC) &_gambleR_simulate_blackjackC, 3},
+    {"_gambleR_count_cards_by_group", (DL_FUNC) &_gambleR_count_cards_by_group, 3},
+    {"_gambleR_ids_to_value_blackjack", (DL_FUNC) &_gambleR_ids_to_value_blackjack, 1},
+    {"_gambleR_simulate_blackjackC", (DL_FUNC) &_gambleR_simulate_blackjackC, 4},
     {NULL, NULL, 0}
 };
 
