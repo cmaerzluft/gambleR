@@ -24,12 +24,15 @@ devtools::load_all()
 
 # sourceCpp("src/simulate_blackjack.cpp")
 
+#########################################################################################################################
+# Blackjack Simulation ##################################################################################################
 set.seed(12345)
+
+# Options
 n_decks <- 1
 n_players <- 5
 n_hands <- 10000
-count_method <- "hi-lo"
-# count_method <- "griffin_ultimate"
+count_method <- "hi-lo" # "griffin_ultimate"
 bj_sim_hands <- simulate_blackjack(
   n_decks = n_decks, n_players = n_players, n_hands = n_hands, count_method = count_method
 )
@@ -110,6 +113,7 @@ ggplot(results_sum) +
 # set.seed(12345)
 # games <- deal_hands(n_decks = n_decks, n_players = n_players, n_hands = n_hands)
 # games <- play_hands(games)
+#########################################################################################################################
 
 
 

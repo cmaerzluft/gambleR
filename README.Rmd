@@ -22,3 +22,30 @@ R code is in R/
 C++ code is in src/
 
 dev/workbook.R contains script where code is tested during development.
+
+# Plan
+
+Want to have two sides to this package
+
+1) Simulation code
+2) Playable code
+
+Also need to add unit testing
+
+## Simulation code
+Should simulate various games efficiently (C++), giving the user different options for controlling how the game is played. Will start with simple controls and slowly get more complex. For fun, include version of the code that simulates the game without using C++.
+
+### Games:
+* Blackjack (need to check where code is at)
+* Texas Hold'Em (need to add from TexasHoldEm repo and update accordingly)
+* Craps (to do)
+* Others?
+
+## Playable code
+Should create a playable version of various games using OOP (R6). The user would be able to select different settings to select for computer players.
+
+### Games:
+* Blackjack (to do)
+* Texas Hold'Em (to do)
+* Craps (to do)
+* Others?

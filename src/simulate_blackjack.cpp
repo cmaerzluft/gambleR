@@ -138,6 +138,7 @@ Rcpp::DataFrame simulate_blackjackC(
       int player_card_number = player_cards.size() + 1;
 
       // Get the dealt card
+      // CM NOTE: Need to adjust card_v_wh to be 11 for Ace when it makes sense.
       if (shuffled_deck.size() == 0) { stop("No cards"); }
       int card_i_wh = shuffled_deck[0];
       int card_v_wh = id_to_value_blackjack(card_i_wh);
