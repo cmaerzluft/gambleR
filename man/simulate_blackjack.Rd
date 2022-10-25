@@ -24,7 +24,7 @@ A tibble containing the following columns:
 \item{card_number}{The number of cards a player has been dealt within a given hand.}
 \item{card_id}{The dealt card's ID. The 100s digit represents suit (1-4) while the 10s and 1s digits
 represents the face value (2-14: 11-13 represent Jack, Queen, King respectively and 14 represents the Ace)}
-\item{card_value}{The dealt card's value.}
+\item{card_value}{The dealt card's value. Always 1 for an Ace even though an Ace can also be worth 11.}
 \item{running_score}{A player's running score within the hand (First two dealt cards have the same score).}
 \item{deck_count}{The knowable count of the deck (not true count since we don't count the first burned card.}
 }
