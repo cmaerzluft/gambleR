@@ -54,17 +54,20 @@ int count_card(int x = 0, const std::string method = "none", const bool start = 
 }
 
 // [[Rcpp::export]]
-std::vector<int> count_cards_by_group(std::vector<int> x, std::vector<int> y, const std::string method = "none") {
-  int n_cards = x.size();
+std::vector<int> count_cards_by_group(std::vector<int> cards_dealt, std::vector<int> shuffle_id, const std::string method = "none") {
+  // Cards pre-converted to their value (ace == 1)
+  int n_cards = cards_dealt.size();
   std::vector<int> res(n_cards);
   int start_value = count_card(0, method, true);
 
-  res[0] = start_value + count_card(x[0], method, false);
+  // Iterate overall all dealt hands for entire simulation
+  res[0] = start_value + count_card(cards_dealt[0], method, false);
   for (int i1 = 1; i1 < n_cards; i1++) {
-    if (y[i1] == y[i1 - 1]) {
-      res[i1] = res[i1 - 1] + count_card(x[i1], method, false);
+    // Reset count to 0 when a new shuffle starts
+    if (shuffle_id[i1] == shuffle_id[i1 - 1]) {
+      res[i1] = res[i1 - 1] + count_card(cards_dealt[i1], method, false);
     } else {
-      res[i1] = start_value + count_card(x[i1], method, false);
+      res[i1] = start_value + count_card(cards_dealt[i1], method, false);
     }
   }
 

@@ -25,7 +25,9 @@ List score_blackjack(std::vector<int> player_hand) {
   );
 }
 
+// [[Rcpp::export]]
 List score_blackjack_by_group(std::vector<int> player_hands, std::vector<int> player_hand_ids, std::vector<int> player_ids) {
+  // CM NOTE: Can probably come up with a better name for export version.
   // Initializations
   int n_players = player_ids.size();
   std::vector<int> player_scores;
@@ -36,6 +38,7 @@ List score_blackjack_by_group(std::vector<int> player_hands, std::vector<int> pl
     // Get current player's hand
     std::vector<int> player_i1_hand;
     for (int i2 = 0; i2 < player_hands.size(); i2++) {
+      // CM NOTE: Can we remove cards from player_hands so each succesive iteration is faster?
       if (player_hand_ids[i2] == player_ids[i1]) {
         player_i1_hand.push_back(player_hands[i2]);
       }

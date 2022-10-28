@@ -1,9 +1,8 @@
 #include <numeric>
-#include <RcppArmadilloExtensions/sample.h>
-#include <Rcpp.h>
-#include "blackjack_count.h"
-#include "blackjack_utils.h"
-#include "blackjack_score.h"
+// CM NOTE: When deck_class is completed, can remove deck_utils since it just includes the shuffle_deck function
+#include "deck_utils.h"
+#include "deck_class.h"
+#include "blackjack_helper_funs.h"
 using namespace Rcpp;
 
 // [[Rcpp::export]]
@@ -12,6 +11,7 @@ Rcpp::DataFrame simulate_blackjackC(
     std::vector<int> card_deck,
     std::string count_method = "hi-lo"
 ) {
+  // CM NOTE: Where is a better place to put check functions?
   if (n_players < 1) { stop("Need more players."); }
   // Initialize player IDs
   int n_players_dealer = n_players + 1;
@@ -28,17 +28,21 @@ Rcpp::DataFrame simulate_blackjackC(
   std::vector<int> game_deck_count;    game_deck_count.reserve(n_hands*n_players_dealer*2);
 
   // Shuffle and burn one card
-  // CM NOTE: This would be an area to go OOP. shuffled_deck would be a public member, and there would be a function for
-  //  dealing that did the method below (or the method in the for loop for reshuffling) and a function for dealing a
-  //  card from the top.
-  std::vector<int> shuffled_deck = RcppArmadillo::sample(card_deck, card_deck.size(), false);
+  Deck table_deck;
+  // CM NOTE: Deck table_deck; is identical to the next two lines of code
+  std::vector<int> shuffled_deck = sample(card_deck);
   shuffled_deck.erase(shuffled_deck.begin());
-  // game_deck_count.push_back(count_card(0, count_method, true));
-
-  // Simulate hands
   int current_shuffle = 1;
   bool new_deal = true;
-  for (int i1 = 0; i1 < n_hands; i1++) {
+
+  // std::vector<int> test_deck = table_deck.get_currentdeck();
+  // std::cout << "The value of v : ";
+  // for (int i = 0; i < test_deck.size(); i++) {
+  //   std::cout << test_deck.at(i) << ' ';
+  // }
+
+  // Simulate hands
+  for (int hand_iter_i1 = 0; hand_iter_i1 < n_hands; hand_iter_i1++) {
     // Individual hand information
     // CM NOTE: Doing this so we can pass this information as needed later on, but is there a fast way to use subsets
     //  of a vector because hand_ objects are really just subsets of game_ objects which is what we return ultimately
@@ -48,10 +52,13 @@ Rcpp::DataFrame simulate_blackjackC(
     std::vector<int> hand_card_value;    hand_card_value.reserve(n_players_dealer*2);
 
     // Reshuffle the deck if we need to
+    // CM NOTE: Need a better method for formalizing when to reshuffle (and put some random variation in as well)
     if (shuffled_deck.size() < n_players_dealer*(4 + 4/n_players_dealer)) {
-      // CM NOTE: See note above about OOP
+      // CM NOTE: I think this would be an area to go OOP. shuffled_deck would be a public member, and there would be a
+      //  function for dealing that did the method below (or the method in the for loop for reshuffling) and a function
+      //  for dealing a card from the top.
       shuffled_deck.clear();
-      std::vector<int> new_shuffle = RcppArmadillo::sample(card_deck, card_deck.size(), false);
+      std::vector<int> new_shuffle = sample(card_deck);
       shuffled_deck.insert(shuffled_deck.begin(), new_shuffle.begin(), new_shuffle.end());
       shuffled_deck.erase(shuffled_deck.begin());
       new_deal = true;
@@ -59,8 +66,8 @@ Rcpp::DataFrame simulate_blackjackC(
     }
 
     // Deal the cards
-    for (int i2 = 0; i2 < 2; i2++) {
-      for (int i3 = 0; i3 < n_players_dealer; i3++) {
+    for (int deal_iter_i2 = 0; deal_iter_i2 < 2; deal_iter_i2++) {
+      for (int player_iter_i3 = 0; player_iter_i3 < n_players_dealer; player_iter_i3++) {
         // Get the dealt card
         if (shuffled_deck.size() == 0) { stop("No cards"); }
         int card_i_i3 = shuffled_deck[0];
@@ -70,9 +77,9 @@ Rcpp::DataFrame simulate_blackjackC(
 
         // Deal cards tracking in the game results
         game_shuffle_id.push_back(current_shuffle);
-        game_hand_id.push_back(i1 + 1);
-        game_player_id.push_back(player_ids[i3]);
-        game_card_number.push_back(i2 + 1);
+        game_hand_id.push_back(hand_iter_i1 + 1);
+        game_player_id.push_back(player_ids[player_iter_i3]);
+        game_card_number.push_back(deal_iter_i2 + 1);
         game_card_id.push_back(card_i_i3);
         game_card_value.push_back(card_v_i3);
         if (new_deal) {
@@ -84,7 +91,7 @@ Rcpp::DataFrame simulate_blackjackC(
         game_deck_count.push_back(current_count + card_c_i3);
 
         // and in the current hand
-        hand_player_id.push_back(player_ids[i3]);
+        hand_player_id.push_back(player_ids[player_iter_i3]);
         hand_card_id.push_back(card_i_i3);
         hand_card_value.push_back(card_v_i3);
 
@@ -104,14 +111,17 @@ Rcpp::DataFrame simulate_blackjackC(
     if (score_value[score_value.size() - 1] >= 21) { continue; }
 
     // Determine who wants to hit
-    // CM NOTE: Make this a function that takes a condition in the form of a function?
+    // CM NOTE: Make this a function that can take a condition in the form of a function?
     //  i.e. hit_strategy(scores, soft, f) where f = function(x) x < 17 | (x == 17 & soft)
     //  this should also be something that can be specified for each player individually
     std::vector<int> idxs_to_hit;
     bool any_to_hit;
-    for (int i4 = 0; i4 < score_value.size(); i4++) {
-      if ((score_value[i4] < 17) | (score_value[i4] == 17 & soft_ace[i4] == true)) {
-        idxs_to_hit.push_back(i4);
+    for (int hit_check_iter_i2 = 0; hit_check_iter_i2 < score_value.size(); hit_check_iter_i2++) {
+      if (
+          (score_value[hit_check_iter_i2] < 17) |
+            (score_value[hit_check_iter_i2] == 17 & soft_ace[hit_check_iter_i2] == true)
+      ) {
+        idxs_to_hit.push_back(hit_check_iter_i2);
         if (any_to_hit == false) {
           any_to_hit = true;
         }
@@ -130,9 +140,9 @@ Rcpp::DataFrame simulate_blackjackC(
       int idx_to_hit = idxs_to_hit[0];
       int player_up = player_ids[idx_to_hit];
       std::vector<int> player_cards;
-      for (int i5 = 0; i5 < hand_player_id.size(); i5++) {
-        if (hand_player_id[i5] == player_up) {
-          player_cards.push_back(hand_card_value[i5]);
+      for (int find_player_iter_i3 = 0; find_player_iter_i3 < hand_player_id.size(); find_player_iter_i3++) {
+        if (hand_player_id[find_player_iter_i3] == player_up) {
+          player_cards.push_back(hand_card_value[find_player_iter_i3]);
         }
       }
       int player_card_number = player_cards.size() + 1;
@@ -147,7 +157,7 @@ Rcpp::DataFrame simulate_blackjackC(
 
       // Deal card to the player in the game
       game_shuffle_id.push_back(current_shuffle);
-      game_hand_id.push_back(i1 + 1);
+      game_hand_id.push_back(hand_iter_i1 + 1);
       game_player_id.push_back(player_up);
       game_card_number.push_back(player_card_number);
       game_card_id.push_back(card_i_wh);

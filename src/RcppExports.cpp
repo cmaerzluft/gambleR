@@ -12,15 +12,28 @@ Rcpp::Rostream<false>& Rcpp::Rcerr = Rcpp::Rcpp_cerr_get();
 #endif
 
 // count_cards_by_group
-std::vector<int> count_cards_by_group(std::vector<int> x, std::vector<int> y, const std::string method);
-RcppExport SEXP _gambleR_count_cards_by_group(SEXP xSEXP, SEXP ySEXP, SEXP methodSEXP) {
+std::vector<int> count_cards_by_group(std::vector<int> cards_dealt, std::vector<int> shuffle_id, const std::string method);
+RcppExport SEXP _gambleR_count_cards_by_group(SEXP cards_dealtSEXP, SEXP shuffle_idSEXP, SEXP methodSEXP) {
 BEGIN_RCPP
     Rcpp::RObject rcpp_result_gen;
     Rcpp::RNGScope rcpp_rngScope_gen;
-    Rcpp::traits::input_parameter< std::vector<int> >::type x(xSEXP);
-    Rcpp::traits::input_parameter< std::vector<int> >::type y(ySEXP);
+    Rcpp::traits::input_parameter< std::vector<int> >::type cards_dealt(cards_dealtSEXP);
+    Rcpp::traits::input_parameter< std::vector<int> >::type shuffle_id(shuffle_idSEXP);
     Rcpp::traits::input_parameter< const std::string >::type method(methodSEXP);
-    rcpp_result_gen = Rcpp::wrap(count_cards_by_group(x, y, method));
+    rcpp_result_gen = Rcpp::wrap(count_cards_by_group(cards_dealt, shuffle_id, method));
+    return rcpp_result_gen;
+END_RCPP
+}
+// score_blackjack_by_group
+List score_blackjack_by_group(std::vector<int> player_hands, std::vector<int> player_hand_ids, std::vector<int> player_ids);
+RcppExport SEXP _gambleR_score_blackjack_by_group(SEXP player_handsSEXP, SEXP player_hand_idsSEXP, SEXP player_idsSEXP) {
+BEGIN_RCPP
+    Rcpp::RObject rcpp_result_gen;
+    Rcpp::RNGScope rcpp_rngScope_gen;
+    Rcpp::traits::input_parameter< std::vector<int> >::type player_hands(player_handsSEXP);
+    Rcpp::traits::input_parameter< std::vector<int> >::type player_hand_ids(player_hand_idsSEXP);
+    Rcpp::traits::input_parameter< std::vector<int> >::type player_ids(player_idsSEXP);
+    rcpp_result_gen = Rcpp::wrap(score_blackjack_by_group(player_hands, player_hand_ids, player_ids));
     return rcpp_result_gen;
 END_RCPP
 }
@@ -52,6 +65,7 @@ END_RCPP
 
 static const R_CallMethodDef CallEntries[] = {
     {"_gambleR_count_cards_by_group", (DL_FUNC) &_gambleR_count_cards_by_group, 3},
+    {"_gambleR_score_blackjack_by_group", (DL_FUNC) &_gambleR_score_blackjack_by_group, 3},
     {"_gambleR_ids_to_value_blackjack", (DL_FUNC) &_gambleR_ids_to_value_blackjack, 1},
     {"_gambleR_simulate_blackjackC", (DL_FUNC) &_gambleR_simulate_blackjackC, 4},
     {NULL, NULL, 0}

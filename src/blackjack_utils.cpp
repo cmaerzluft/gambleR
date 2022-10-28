@@ -2,6 +2,15 @@
 #include <Rcpp.h>
 using namespace Rcpp;
 
+// CM NOTE: Probably a utility function for all games
+std::vector<int> init_player_ids(int x) {
+  std::vector<int> player_ids(x);
+  std::iota(std::begin(player_ids), std::end(player_ids), 1);
+  player_ids[x - 1] = 101;
+
+  return player_ids;
+}
+
 int id_to_value_blackjack(int x) {
   x = x % 100;
   if (x == 11 | x == 12 | x == 13) { x = 10; }
@@ -21,12 +30,4 @@ std::vector<int> ids_to_value_blackjack(std::vector<int> x) {
   }
 
   return y;
-}
-
-std::vector<int> init_player_ids(int x) {
-  std::vector<int> player_ids(x);
-  std::iota(std::begin(player_ids), std::end(player_ids), 1);
-  player_ids[x - 1] = 101;
-
-  return player_ids;
 }

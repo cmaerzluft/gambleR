@@ -26,6 +26,20 @@ devtools::load_all()
 
 #########################################################################################################################
 # Blackjack Simulation ##################################################################################################
+# To do:
+#   1) create card_deck class in cpp
+#     1b) should have a deal one card function (pop)
+#     1c) should have an attribute about whether it is time to re-shuffle (shuffled_deck.length() < f(x))
+#   2) clean up R version of simulate code so it is around but not in the way
+#   3) investigate making a game_table as a class
+#     3a) this would have a card_deck, players such that the iteration over n_hands is where this class is used
+#       i.e. for (i1 in n_hands) { table$deal() }
+#   4) investigate making a person as a class
+#     4a) a person would sit at the game_table and have their hit strategy stored with them
+#   5) If I can design those elements the way I hope, maybe exposing the person, deck, and table classes to R
+#       would effectively be the "playable" version of the code in R as well.
+
+
 set.seed(12345)
 
 # Options

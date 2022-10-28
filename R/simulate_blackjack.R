@@ -50,9 +50,7 @@ simulate_blackjack <- function(n_players, n_hands, n_decks = 1, count_method = "
 }
 
 
-# CM NOTE: Idea, run game as a nested tibble:
-#   game = tibble(game_id = numeric, cards = vector, hands = tibble())
-#     hands = tibble(player_id, card_number, card_value)
+
 simulate_blackjackR <- function(n_decks, n_players, n_hands, progress = TRUE) {
   # Logic checks
   # if (n_players >= 101L) { stop("Can't have more than 100 players") }
